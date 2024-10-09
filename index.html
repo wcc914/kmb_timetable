@@ -43,10 +43,10 @@
     <table id="busTable">
         <thead>
             <tr>
-                <th>Route</th>
-                <th>Destination (CHI)</th>
-                <th>BusStop</th>
-                <th>ETA (xxx min compare to now)</th>
+                <th>巴士</th>
+                <th>目的地</th>
+                <th>巴士站</th>
+                <th>預計時間</th>
                 <th>Remark</th>
             </tr>
         </thead>
@@ -124,7 +124,9 @@
                 if (entry.eta) {
                     const etaTime = new Date(entry.eta);
                     const etaMinutes = Math.round((etaTime - now) / 60000);
-                    etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
+                    etaDisplay = etaMinutes < 1 ?
+						'<span class="arriving">即將到達</span>' :
+						etaMinutes + ' min' + '<span style="font-size:0.8em;color:#ccc">  (' + etaTime.getHours() + ':' + etaTime.getMinutes().toString().padStart(2, '0') + ')</span>';
                 }
                 const row = `
                     <tr>
