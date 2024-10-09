@@ -17,7 +17,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bus ETA v1</title>
+    <title>Bus ETA v1.1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,7 +47,7 @@
                 <th>往</th>
                 <th>巴士站</th>
                 <th>預計到達時間</th>
-                <th></th>
+                <th>Remarks</th>
             </tr>
         </thead>
         <tbody>
@@ -123,8 +123,8 @@
                 let etaDisplay = '-';
                 if (entry.eta) {
 		    const etaTime = new Date(entry.eta);
-                    const etaMinutes = Math.round((etaTime - new Date(entry.data_timestamp)) / 60000);
-		    const etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
+                    const etaMinutes = Math.round((etaTime - new Date()) / 60000);
+		    const etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}: ${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
                 }
                 const row = `
                     <tr>
