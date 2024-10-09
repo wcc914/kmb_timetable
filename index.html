@@ -29,11 +29,11 @@
     <table id="busTable">
         <thead>
             <tr>
-                <th>Route</th>
-                <th>Destination (CHI)</th>
-                <th>BusStop</th>
-                <th>ETA (xxx min compare to now)</th>
-                <th>Remark</th>
+                <th>巴士</th>
+                <th>往</th>
+                <th>巴士站</th>
+                <th>預計到達時間</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -118,7 +118,7 @@
                         <td>${entry.dest_tc}</td>
                         <td>${busStopNames[entry.busStopId]}</td>
                         <td>${etaDisplay}</td>
-                        <td>${entry.rmk_tc || ' - '}</td>
+                        <td>${entry.rmk_tc}</td>
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', row);
