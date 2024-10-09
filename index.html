@@ -1,23 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
-@media (max-width: 800px) {
-    /* Hide the Remark column on mobile screens */
-    th:nth-child(5), 
-    td:nth-child(5) {
-        display: none;
-    }
-}
-
-.arriving {
-    color: #004d00; /* Deep green color */
-    font-weight: bold; /* Bold text */
-}
-</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bus ETA v1.1</title>
+    <title>Bus ETA</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,6 +22,20 @@
         th {
             background-color: #f2f2f2;
         }
+		
+		@media (max-width: 800px) {
+			/* Hide the Remark column on mobile screens */
+			th:nth-child(5), 
+			td:nth-child(5) {
+				display: none;
+			}
+		}
+		
+		.arriving {
+			color: #004d00; /* Deep green color */
+			font-weight: bold; /* Bold text */
+			font-size: 1.2em
+		}
     </style>
 </head>
 <body>
@@ -43,11 +43,11 @@
     <table id="busTable">
         <thead>
             <tr>
-                <th>巴士</th>
-                <th>往</th>
-                <th>巴士站</th>
-                <th>預計到達時間</th>
-                <th>Remarks</th>
+                <th>Route</th>
+                <th>Destination (CHI)</th>
+                <th>BusStop</th>
+                <th>ETA (xxx min compare to now)</th>
+                <th>Remark</th>
             </tr>
         </thead>
         <tbody>
@@ -102,7 +102,7 @@
 
 			let groupedData = uniqueData.reduce((acc, item) => {
 				// Create a unique key for each group
-				let key = `${item.route}-${item.busStopId}-${item.eta_seq}`;
+				let key = `${item.route}-${item.dir}-${item.busStopId}-${item.eta_seq}`;
 
 				// Initialize group if it doesn't exist
 				if (!acc[key]) {
@@ -122,9 +122,9 @@
             uniqueData.forEach(entry => {
                 let etaDisplay = '-';
                 if (entry.eta) {
-		    const etaTime = new Date(entry.eta);
-                    const etaMinutes = Math.round((etaTime - new Date()) / 60000);
-		    const etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}: ${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
+                    const etaTime = new Date(entry.eta);
+                    const etaMinutes = Math.round((etaTime - now) / 60000);
+                    etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
                 }
                 const row = `
                     <tr>
@@ -132,7 +132,7 @@
                         <td>${entry.dest_tc}</td>
                         <td>${busStopNames[entry.busStopId]}</td>
                         <td>${etaDisplay}</td>
-                        <td>${entry.rmk_tc}</td>
+                        <td>${entry.rmk_tc || ' - '}</td>
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', row);
