@@ -117,9 +117,9 @@
             uniqueData.forEach(entry => {
                 let etaDisplay = '-';
                 if (entry.eta) {
-                    const etaTime = new Date(entry.eta);
-                    const etaMinutes = Math.round((etaTime - now) / 60000);
-                    etaDisplay = etaMinutes < 1 ? 'arriving' : `${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
+			
+                    const etaMinutes = Math.round((new Date(entry.eta) - new Date(entry.data_timestamp)) / 60000);
+		    const etaDisplay = etaMinutes < 1 ? '<span class="arriving">即將到達</span>' : `${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')} (${etaMinutes} min)`;
                 }
                 const row = `
                     <tr>
