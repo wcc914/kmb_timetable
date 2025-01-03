@@ -49,15 +49,16 @@
 			width: 14%;
 		}
 		
-		
-		.to_label{
+		p {
 			margin:0;
+		}
+	
+		.to_label{
 			text-align: left;
 
 		}
 		
-		.bus_end{
-			margin:0;
+		.bus_end {
 			text-align: left;
 			font-size: 2vw;
 			font-weight: bold;
@@ -66,11 +67,18 @@
 		.arriving {
 			color: #004d00; /* Deep green color */
 			font-weight: bold; /* Bold text */
-			font-size: 1.2em
+			font-size: 1.5em
 		}
 		
 		.eta {
 			font-size: 1.2vw;
+			margin: 15px;
+			display: table;
+		}
+		
+		.eta > div {
+			display: table-cell;
+			vertical-align: middle;
 		}
     </style>
 </head>
@@ -147,7 +155,7 @@
 					let cell = `<td style="vertical-align:top">`
 					Object.entries(destinations).forEach(([destination, buses], i) => {
 						cell += `<div style="display: flex; padding: 5px">`
-						cell += `<div style="float:left; width:60%; height:100%">
+						cell += `<div style="float:left; width:40%; height:100%">
 									<p class="to_label">往</p>
 									<p class="bus_end">${destination}</p>
 								</div>`
@@ -157,11 +165,17 @@
 								const etaTime = new Date(bus.eta);
 								const etaMinutes = Math.round((etaTime - now) / 60000);
 								etaDisplay = etaMinutes < 1 ?
-									'<span class="arriving">即將到達</span>' :
-									etaMinutes + ' min' + '<span style="font-size:0.8em;color:#ccc">  (' + etaTime.getHours() + ':' + etaTime.getMinutes().toString().padStart(2, '0') + ')</span>';
+									`<span class="arriving">即將到達</span>` :
+									`<p>
+										<span style="font-size: 2em">${etaMinutes}</span> 
+										<span style="font-size:1.4em">min</span> 
+									</p>
+									<p style="font-size:0.8em;color:#ccc">
+										( ${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')})
+									</p>`;
 							
 								cell += `<div class="eta">
-									<p>${etaDisplay}</p>
+									<div class="eta-inner">${etaDisplay}</div>
 								</div>`
 							}
 						}
@@ -181,7 +195,7 @@
         }
 
         fetchBusData();
-        setInterval(fetchBusData, 30000);
+//        setInterval(fetchBusData, 30000);
     </script>
 </body>
 </html>
