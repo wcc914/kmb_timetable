@@ -87,7 +87,7 @@
     </table>
 
     <script>
-		const parts = window.location.hash.substring(1).split('|');
+		const parts = decodeURIComponent(window.location.hash.substring(1)).split('|');
         const busStopIds = parts[0].split(',');
         const routeWritelist = parts[1] ? parts[1].split(',') : null;
 
