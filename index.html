@@ -17,18 +17,50 @@
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
-            text-align: left;
+            text-align: center;
         }
-        th {
-            background-color: #f2f2f2;
+
+        .loading {
+            text-align: center;
+            font-size: 1.5em;
+            color: #555;
         }
 		
-		@media (max-width: 800px) {
-			/* Hide the Remark column on mobile screens */
-			th:nth-child(5), 
-			td:nth-child(5) {
-				display: none;
-			}
+		.bus_stop_front{
+			font-size: 4vw;
+			color: #000000;
+			font-weight: bold;
+			text-align: right;
+			vertical-align: bottom;
+		}
+		
+		.bus_stop_rear{
+			font-size: 2vw;
+			color: #000000;
+			text-align: left;
+			vertical-align: bottom;
+		}
+		
+		.bus_num_cell{
+			font-size: 5vw; 
+			color: #FEFEFC;
+			font-weight: bold;
+			background-color: #E21E30;
+			width: 14%;
+		}
+		
+		
+		.to_label{
+			margin:0;
+			text-align: left;
+
+		}
+		
+		.bus_end{
+			margin:0;
+			text-align: left;
+			font-size: 2vw;
+			font-weight: bold;
 		}
 		
 		.arriving {
@@ -36,27 +68,19 @@
 			font-weight: bold; /* Bold text */
 			font-size: 1.2em
 		}
+		
+		.eta {
+			font-size: 1.2vw;
+		}
     </style>
 </head>
 <body>
     <table id="busTable">
-        <thead>
-            <tr>
-                <th>巴士</th>
-                <th>目的地</th>
-                <th>巴士站</th>
-                <th>預計時間</th>
-                <th>Remark</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data will be inserted here -->
-        </tbody>
     </table>
 
     <script>
-		const busStopIds = window.location.hash.substring(1);
-		
+        const busStopIds = window.location.hash.substring(1);
+
         async function fetchBusStopName(busStopId) {
             const response = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${busStopId}`);
             const data = await response.json();
@@ -65,8 +89,9 @@
 
         async function fetchBusData() {
             let now = new Date();
-            let tableBody = document.querySelector('#busTable tbody');
-            tableBody.innerHTML = '';
+
+			let table = document.querySelector('#busTable');
+            table.innerHTML = '';
 
             let uniqueData = [];
             let busStopNames = {};
@@ -88,55 +113,70 @@
             for (const busStopId of busStopIds.split(',')) {
                 busStopNames[busStopId] = await fetchBusStopName(busStopId);
             }
+			
+			let uniqueBusStops = [...new Set(Object.values(busStopNames))];
 
-            uniqueData.sort((a, b) => {
-                if (a.eta && b.eta) {
-                    return new Date(a.eta) - new Date(b.eta);
-                } else if (a.eta) {
-                    return -1;
-                } else {
-                    return 1;
-                }
+            // Grouping data by route and bus stop
+            const busDataDict = {};
+            uniqueData.forEach(bus => {
+				let stopName = busStopNames[bus.busStopId];
+
+                if (!busDataDict[bus.route]) busDataDict[bus.route] = {};
+				if (!busDataDict[bus.route][stopName]) busDataDict[bus.route][stopName] = {};
+				if (!busDataDict[bus.route][stopName][bus.dest_tc]) busDataDict[bus.route][stopName][bus.dest_tc] = [];
+				
+
+                busDataDict[bus.route][stopName][bus.dest_tc].push(bus);
             });
 
-			let groupedData = uniqueData.reduce((acc, item) => {
-				// Create a unique key for each group
-				let key = `${item.route}-${item.dir}-${item.busStopId}-${item.eta_seq}`;
+			let header = 
+					'<tr><th></th>' +
+					uniqueBusStops.map(r => `<td><span class="bus_stop_front">${r}</span><span class="bus_stop_rear">車站</span></td>`).join('') + 
+					'</tr>';
 
-				// Initialize group if it doesn't exist
-				if (!acc[key]) {
-					acc[key] = { ... item };
-				} else {
-					acc[key].dest_tc = acc[key].dest_tc + " / " + item.dest_tc
-				}
-			  
-			  // Aggregate the values
-			  acc[key].totalValue += item.value;
-			  
-			  return acc;
-			}, {});
-			
-			uniqueData = Object.values(groupedData);
+			table.insertAdjacentHTML('beforeend', header)
 
-            uniqueData.forEach(entry => {
-                let etaDisplay = '-';
-                if (entry.eta) {
-                    const etaTime = new Date(entry.eta);
-                    const etaMinutes = Math.round((etaTime - now) / 60000);
-                    etaDisplay = etaMinutes < 1 ?
-						'<span class="arriving">即將到達</span>' :
-						etaMinutes + ' min' + '<span style="font-size:0.8em;color:#ccc">  (' + etaTime.getHours() + ':' + etaTime.getMinutes().toString().padStart(2, '0') + ')</span>';
-                }
-                const row = `
-                    <tr>
-                        <td>${entry.route}</td>
-                        <td>${entry.dest_tc}</td>
-                        <td>${busStopNames[entry.busStopId]}</td>
-                        <td>${etaDisplay}</td>
-                        <td>${entry.rmk_tc || ' - '}</td>
-                    </tr>
-                `;
-                tableBody.insertAdjacentHTML('beforeend', row);
+			Object.entries(busDataDict).forEach(([route_no, stops], i) => {
+                let row = `<tr>`;
+				row += `<td class="bus_num_cell">${route_no}</td>`;
+				
+				uniqueBusStops.forEach(busStopName => {
+					let destinations = stops[busStopName]
+					if (!destinations) return;
+					
+					let cell = `<td style="vertical-align:top">`
+					Object.entries(destinations).forEach(([destination, buses], i) => {
+						cell += `<div style="display: flex; padding: 5px">`
+						cell += `<div style="float:left; width:60%; height:100%">
+									<p class="to_label">往</p>
+									<p class="bus_end">${destination}</p>
+								</div>`
+						
+						for (bus of buses) {
+							if (bus.eta) {
+								const etaTime = new Date(bus.eta);
+								const etaMinutes = Math.round((etaTime - now) / 60000);
+								etaDisplay = etaMinutes < 1 ?
+									'<span class="arriving">即將到達</span>' :
+									etaMinutes + ' min' + '<span style="font-size:0.8em;color:#ccc">  (' + etaTime.getHours() + ':' + etaTime.getMinutes().toString().padStart(2, '0') + ')</span>';
+							
+								cell += `<div class="eta">
+									<p>${etaDisplay}</p>
+								</div>`
+							}
+						}
+						
+								
+						cell +=	`</div>`
+							
+					})
+					cell += `</td>`
+					row += cell;
+				})
+				
+				row += `</tr>`;
+				
+                table.insertAdjacentHTML('beforeend',row);
             });
         }
 
