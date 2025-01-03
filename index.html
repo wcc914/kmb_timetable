@@ -87,7 +87,9 @@
     </table>
 
     <script>
-        const busStopIds = window.location.hash.substring(1);
+		const parts = window.location.hash.substring(1).split('|');
+        const busStopIds = parts[0].split(',');
+        const routeWritelist = parts[1] ? parts[1].split(',') : null;
 
         async function fetchBusStopName(busStopId) {
             const response = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${busStopId}`);
@@ -104,7 +106,7 @@
             let uniqueData = [];
             let busStopNames = {};
 
-            let promises = busStopIds.split(',').map(busStopId => 
+            let promises = busStopIds.map(busStopId => 
                 fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${busStopId}`)
                     .then(response => response.json())
                     .then(data => {
@@ -118,16 +120,20 @@
 
             await Promise.all(promises);
 
-            for (const busStopId of busStopIds.split(',')) {
+            for (const busStopId of busStopIds) {
                 busStopNames[busStopId] = await fetchBusStopName(busStopId);
             }
 			
 			let uniqueBusStops = [...new Set(Object.values(busStopNames))];
 
+			uniqueData = uniqueData.filter(entry => entry.service_type === 1)
+
             // Grouping data by route and bus stop
             const busDataDict = {};
             uniqueData.forEach(bus => {
 				let stopName = busStopNames[bus.busStopId];
+
+				if (routeWritelist && !routeWritelist.includes(bus.route)) return
 
                 if (!busDataDict[bus.route]) busDataDict[bus.route] = {};
 				if (!busDataDict[bus.route][stopName]) busDataDict[bus.route][stopName] = {};
