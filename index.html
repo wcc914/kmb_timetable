@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +8,13 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
         th, td {
-            border: 1px solid #ddd;
+	        border: 2px solid #7D2627;
             padding: 8px;
             text-align: center;
         }
@@ -26,20 +25,8 @@
             color: #555;
         }
 		
-		.bus_stop_front{
-			font-size: 4vw;
-			color: #000000;
-			font-weight: bold;
-			text-align: right;
-			vertical-align: bottom;
-		}
-		
-		.bus_stop_rear{
-			font-size: 2vw;
-			color: #000000;
-			text-align: left;
-			vertical-align: bottom;
-		}
+
+
 		
 		.bus_num_cell{
 			font-size: 5vw; 
@@ -55,35 +42,25 @@
 	
 		.to_label{
 			text-align: left;
-
+			
 		}
 		
 		.bus_end {
 			text-align: left;
-			font-size: 2vw;
+			font-size: 3vw;
 			font-weight: bold;
 		}
 		
 		.arriving {
-			color: #004d00; /* Deep green color */
+			color: #2F5595; /* Blue color */
 			font-weight: bold; /* Bold text */
-			font-size: 1.5em
+			font-size: 2em;
 		}
-		
-		.eta {
-			font-size: 1.2vw;
-			margin: 15px;
-			display: table;
-		}
-		
-		.eta > div {
-			display: table-cell;
-			vertical-align: middle;
-		}
+
     </style>
 </head>
 <body>
-    <table id="busTable">
+    <table id="busTable" style="height:100%;width:100%;position:absolute;top:0;bottom:0;left:0;right:0;">
     </table>
 
     <script>
@@ -143,46 +120,53 @@
                 busDataDict[bus.route][stopName][bus.dest_tc].push(bus);
             });
 
-			let header = 
-					'<tr><th></th>' +
-					uniqueBusStops.map(r => `<td><span class="bus_stop_front">${r}</span><span class="bus_stop_rear">車站</span></td>`).join('') + 
+			let header = '<tr style="height: 16vh;""><th></th>' +
+					uniqueBusStops.map(r => `<td>
+                        <span style="font-size: 3em;color: #000000;font-weight:bold;text-align:right;vertical-align:bottom;">${r}</span>
+                        <span style="font-size: 1.8em;color: #000000;text-align: left;vertical-align: bottom;">車站</span></td>`).join('') + 
 					'</tr>';
 
 			table.insertAdjacentHTML('beforeend', header)
 
-			Object.entries(busDataDict).forEach(([route_no, stops], i) => {
-                let row = `<tr>`;
+			//Object.entries(busDataDict).forEach(([route_no, stops], i) => {
+            routeWritelist.forEach(route_no => {
+				let stops = busDataDict[route_no]
+				
+				let row = `<tr style="height: 14vh;">`;
 				row += `<td class="bus_num_cell">${route_no}</td>`;
 				
 				uniqueBusStops.forEach(busStopName => {
 					let destinations = stops[busStopName]
 					if (!destinations) return;
 					
-					let cell = `<td style="vertical-align:top">`
+					let cell = `<td style="vertical-align:middle; width: 43%;">`
 					Object.entries(destinations).forEach(([destination, buses], i) => {
 						cell += `<div style="display: flex; padding: 5px">`
-						cell += `<div style="float:left; width:40%; height:100%">
+						cell += `<div style="float:left; width: 55%; height:100%">
 									<p class="to_label">往</p>
 									<p class="bus_end">${destination}</p>
 								</div>`
 						
-						for (bus of buses) {
+						for (let i = 0; i < buses.length; i++) {
+							let bus = buses[i]
 							if (bus.eta) {
 								const etaTime = new Date(bus.eta);
-								const etaMinutes = Math.round((etaTime - now) / 60000);
-								etaDisplay = etaMinutes < 1 ?
-									`<span class="arriving">即將到達</span>` :
-									`<p>
-										<span style="font-size: 2em">${etaMinutes}</span> 
-										<span style="font-size:1.4em">min</span> 
-									</p>
-									<p style="font-size:0.8em;color:#ccc">
-										( ${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2, '0')})
-									</p>`;
-							
-								cell += `<div class="eta">
-									<div class="eta-inner">${etaDisplay}</div>
+								const etaMinutes = Math.round((etaTime - now) / 60000);							
+								cell += `<div style="font-size:3vw;display:table;font-weight:bold;width:15%">
+									<div style="display:table-cell; vertical-align:middle;">
+										<div class="minutes" style="${i==0?'font-size:1.5em;color:#2F5595':'font-size:0.8em;line-height:2.1em;font-weight:normal'}">
+											${etaMinutes<1?'<span style="color:#004d00;font-size:1.2em">-</span>':etaMinutes}
+										</div>
+										
+										<div style="font-size:0.3em;color:#B1B1B1;vertical-align:bottom;">
+											${etaMinutes<1?'':'分鐘'}
+										</div> 
+										<div style="font-size:0.3em;color:#ccc">
+											(${etaTime.getHours()}:${etaTime.getMinutes().toString().padStart(2,'0')})
+										</div>
+									</div>
 								</div>`
+								
 							}
 						}
 						
